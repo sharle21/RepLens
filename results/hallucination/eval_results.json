@@ -1,0 +1,12 @@
+{
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "true_positives": 25,
+  "false_positives": 0,
+  "true_negatives": 25,
+  "false_negatives": 0,
+  "threshold": 0.5,
+  "avg_factual_score": -9.842359981536866,
+  "avg_halluc_score": 11.008038368225098
+}
