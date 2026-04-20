@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project artifacts — large binary files
+data/stories/
+*.pt
+*.safetensors
+
+# Keep results/ JSON and figures tracked (small, needed for README)
+
+# Claude Code
+CLAUDE.md
+
+# Secrets
+.env
+*.key
+credentials.json
+
+# HuggingFace cache
+.cache/
+models/
+
+# Pytest
+.pytest_cache/
