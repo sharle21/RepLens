@@ -1,0 +1,9 @@
+{
+  "name": "meta-llama/Llama-3.1-8B-Instruct",
+  "family": "llama",
+  "num_layers": 32,
+  "hidden_dim": 4096,
+  "dtype": "torch.float16",
+  "device": "cuda",
+  "num_parameters": 8030261248
+}
