@@ -84,7 +84,9 @@ Applied the same extraction pipeline to Qwen 2.5 7B Instruct. Peak cosine simila
 | Anger | +0.143 | +0.196 | Yes |
 | Guilt | +0.087 | +0.160 | Yes |
 
-**6/6 sign agreement.** The inverted vulnerability profile is not a Llama quirk — confidence and calm are anti-refusal, negative emotions are pro-refusal, across both architectures. Qwen shows the same pattern with slightly stronger magnitudes.
+**6/6 sign agreement.** The geometric pattern is not a Llama quirk — confidence and calm are anti-refusal, negative emotions are pro-refusal, across both architectures.
+
+However, causal steering tells a different story. Qwen's refusal rates stay 92-100% across all emotions and strengths — its safety training is essentially immune to emotion steering. Same vulnerability *geometry*, different vulnerability *magnitude*. This suggests safety training quality matters more than the underlying representation structure.
 
 ---
 

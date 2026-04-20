@@ -473,6 +473,68 @@ with tabs[5]:
             height=400,
         )
         st.plotly_chart(fig_qwen, use_container_width=True)
+
+        # Steering comparison
+        st.subheader("Causal Steering: Refusal Rate at Baseline vs +5.0")
+        st.markdown(
+            "Same geometry, different robustness. Qwen's safety training is "
+            "essentially immune to emotion steering."
+        )
+
+        qwen_sweep_exists = (QWEN_DIR / "sweep_anger.json").exists()
+        if qwen_sweep_exists:
+            steer_rows = []
+            for em in emotions:
+                llama_sweep = load_json(RESULTS_DIR / f"sweep_{em}.json")
+                qwen_sweep = load_json(QWEN_DIR / f"sweep_{em}.json")
+
+                l_base = next(r["refusal_rate"] for r in llama_sweep if r["strength"] == 0.0)
+                l_5 = next(r["refusal_rate"] for r in llama_sweep if r["strength"] == 5.0)
+                q_base = next(r["refusal_rate"] for r in qwen_sweep if r["strength"] == 0.0)
+                q_5 = next(r["refusal_rate"] for r in qwen_sweep if r["strength"] == 5.0)
+
+                steer_rows.append({
+                    "Emotion": em.capitalize(),
+                    "Llama Baseline": f"{l_base:.0%}",
+                    "Llama +5": f"{l_5:.0%}",
+                    "Llama Change": f"{l_5 - l_base:+.0%}",
+                    "Qwen Baseline": f"{q_base:.0%}",
+                    "Qwen +5": f"{q_5:.0%}",
+                    "Qwen Change": f"{q_5 - q_base:+.0%}",
+                })
+            st.table(steer_rows)
+
+            # Side-by-side sweep curves
+            steer_em = st.selectbox("Compare steering curves", emotions, index=emotions.index("confidence") if "confidence" in emotions else 0)
+            llama_sw = load_json(RESULTS_DIR / f"sweep_{steer_em}.json")
+            qwen_sw = load_json(QWEN_DIR / f"sweep_{steer_em}.json")
+
+            fig_steer = go.Figure()
+            fig_steer.add_trace(go.Scatter(
+                x=[r["strength"] for r in llama_sw],
+                y=[r["refusal_rate"] for r in llama_sw],
+                mode="lines+markers",
+                name="Llama 3.1 8B",
+                line=dict(color="#264653", width=3),
+                marker=dict(size=8),
+            ))
+            fig_steer.add_trace(go.Scatter(
+                x=[r["strength"] for r in qwen_sw],
+                y=[r["refusal_rate"] for r in qwen_sw],
+                mode="lines+markers",
+                name="Qwen 2.5 7B",
+                line=dict(color="#E9C46A", width=3),
+                marker=dict(size=8),
+            ))
+            fig_steer.update_layout(
+                title=f"{steer_em.capitalize()} Steering: Llama vs Qwen",
+                xaxis_title="Steering Strength (α)",
+                yaxis_title="Refusal Rate",
+                height=450,
+            )
+            st.plotly_chart(fig_steer, use_container_width=True)
+        else:
+            st.info("Run Qwen steering sweeps to see causal comparison.")
     else:
         st.info("Run scripts/cross_model_qwen.py to generate Qwen results.")
 
