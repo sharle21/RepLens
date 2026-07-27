@@ -209,25 +209,31 @@ def cmd_hallucination(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="RepLens: Representation Engineering Toolkit"
-    )
-    parser.add_argument(
+    # Common args shared by every subcommand — attached via `parents` so they
+    # can be passed after the subcommand name (e.g. `extract --model ...`),
+    # matching the usage shown in the README.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument(
         "--model", default="meta-llama/Llama-3.1-8B-Instruct",
         help="HuggingFace model name or path",
     )
-    parser.add_argument("--output", default="results", help="Output directory")
-    parser.add_argument("--batch-size", type=int, default=4)
+    common.add_argument("--output", default="results", help="Output directory")
+    common.add_argument("--batch-size", type=int, default=4)
+
+    parser = argparse.ArgumentParser(
+        description="RepLens: Representation Engineering Toolkit",
+        parents=[common],
+    )
 
     subparsers = parser.add_subparsers(dest="command")
 
     # Generate stories command
-    stories_p = subparsers.add_parser("generate-stories", help="Generate emotion stories for extraction")
+    stories_p = subparsers.add_parser("generate-stories", help="Generate emotion stories for extraction", parents=[common])
     stories_p.add_argument("--num-stories", type=int, default=100, help="Stories per emotion")
     stories_p.add_argument("--story-dir", default="data/stories", help="Output directory for stories")
 
     # Extract command
-    extract_p = subparsers.add_parser("extract", help="Extract concept vectors")
+    extract_p = subparsers.add_parser("extract", help="Extract concept vectors", parents=[common])
     extract_p.add_argument(
         "--experiment", choices=["emotion_refusal", "hallucination", "all"],
         default="all",
@@ -236,17 +242,17 @@ def main():
     extract_p.add_argument("--story-dir", default="data/stories", help="Directory with generated stories")
 
     # Steer command
-    steer_p = subparsers.add_parser("steer", help="Run steering experiments")
+    steer_p = subparsers.add_parser("steer", help="Run steering experiments", parents=[common])
     steer_p.add_argument("--experiment", default="emotion_refusal")
     steer_p.add_argument("--emotions", default="desperation,calm,anger")
     steer_p.add_argument("--strengths", default="-3,-1,0,1,3")
 
     # Evaluate command
-    eval_p = subparsers.add_parser("evaluate", help="Generate evaluation report")
+    eval_p = subparsers.add_parser("evaluate", help="Generate evaluation report", parents=[common])
     eval_p.add_argument("--experiment", default="emotion_refusal")
 
     # Hallucination command
-    halluc_p = subparsers.add_parser("hallucination", help="Hallucination detection")
+    halluc_p = subparsers.add_parser("hallucination", help="Hallucination detection", parents=[common])
     halluc_p.add_argument("--threshold", type=float, default=0.5)
 
     args = parser.parse_args()
