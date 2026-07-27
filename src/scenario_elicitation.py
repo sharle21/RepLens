@@ -244,32 +244,33 @@ def validate_vectors(
                 adapter.get_layer, layers, token_mode="last"
             )
 
-            inputs = adapter.tokenize([scenario_text], max_length=512)
+            try:
+                inputs = adapter.tokenize([scenario_text], max_length=512)
 
-            with torch.no_grad():
-                adapter.model(**inputs)
+                with torch.no_grad():
+                    adapter.model(**inputs)
 
-            # Project onto every vector at each layer
-            for layer in layers:
-                activation = collector.get_stacked(layer).squeeze(0).float()
+                # Project onto every vector at each layer
+                for layer in layers:
+                    activation = collector.get_stacked(layer).squeeze(0).float()
 
-                projections: dict[str, float] = {}
-                for emotion_name in all_emotions:
-                    vec = emotion_vectors[emotion_name][layer].float()
-                    projections[emotion_name] = torch.dot(activation, vec).item()
+                    projections: dict[str, float] = {}
+                    for emotion_name in all_emotions:
+                        vec = emotion_vectors[emotion_name][layer].float()
+                        projections[emotion_name] = torch.dot(activation, vec).item()
 
-                if refusal_vectors is not None and layer in refusal_vectors:
-                    vec = refusal_vectors[layer].float()
-                    projections["refusal"] = torch.dot(activation, vec).item()
+                    if refusal_vectors is not None and layer in refusal_vectors:
+                        vec = refusal_vectors[layer].float()
+                        projections["refusal"] = torch.dot(activation, vec).item()
 
-                results.append(ValidationResult(
-                    scenario_text=scenario_text,
-                    scenario_emotion=scenario_emotion,
-                    projections=projections,
-                    layer=layer,
-                ))
-
-            collector.remove_hooks()
+                    results.append(ValidationResult(
+                        scenario_text=scenario_text,
+                        scenario_emotion=scenario_emotion,
+                        projections=projections,
+                        layer=layer,
+                    ))
+            finally:
+                collector.remove_hooks()
 
     return results
 
