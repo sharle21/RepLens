@@ -64,7 +64,17 @@ class ActivationCollector:
         self.mean_from_token = mean_from_token
         self.activations: dict[int, list[torch.Tensor]] = {}
         self.hooks = []
+        self.attention_mask: Optional[torch.Tensor] = None
         self._register_hooks()
+
+    def set_attention_mask(self, attention_mask: Optional[torch.Tensor]):
+        """Set the attention mask for the next forward pass(es).
+
+        Required for `token_mode="mean_from_n"` with left-padded batches —
+        without it, padding-token activations contaminate the mean for any
+        sequence shorter than the batch's longest.
+        """
+        self.attention_mask = attention_mask
 
     def _register_hooks(self):
         for idx in self.layer_indices:
@@ -84,7 +94,15 @@ class ActivationCollector:
                 extracted = hidden[:, -1, :].detach().cpu()
             else:
                 start = min(self.mean_from_token, hidden.shape[1] - 1)
-                extracted = hidden[:, start:, :].mean(dim=1).detach().cpu()
+                window = hidden[:, start:, :]
+                if self.attention_mask is not None:
+                    mask = self.attention_mask[:, start:].to(hidden.device, dtype=hidden.dtype)
+                    mask = mask.unsqueeze(-1)
+                    summed = (window * mask).sum(dim=1)
+                    counts = mask.sum(dim=1).clamp(min=1.0)
+                    extracted = (summed / counts).detach().cpu()
+                else:
+                    extracted = window.mean(dim=1).detach().cpu()
 
             self.activations[layer_idx].append(extracted)
         return hook_fn
@@ -139,18 +157,21 @@ class VectorExtractor:
             mean_from_token=mean_from_token,
         )
 
-        batch_size = self.config.batch_size
-        for i in tqdm(range(0, len(prompts), batch_size), desc=desc):
-            batch = prompts[i : i + batch_size]
-            inputs = self.adapter.tokenize(batch, max_length=self.config.max_length)
+        try:
+            batch_size = self.config.batch_size
+            for i in tqdm(range(0, len(prompts), batch_size), desc=desc):
+                batch = prompts[i : i + batch_size]
+                inputs = self.adapter.tokenize(batch, max_length=self.config.max_length)
 
-            with torch.no_grad():
-                self.adapter.model(**inputs)
+                collector.set_attention_mask(inputs.get("attention_mask"))
+                with torch.no_grad():
+                    self.adapter.model(**inputs)
 
-        result = {
-            layer: collector.get_stacked(layer) for layer in self.config.target_layers
-        }
-        collector.remove_hooks()
+            result = {
+                layer: collector.get_stacked(layer) for layer in self.config.target_layers
+            }
+        finally:
+            collector.remove_hooks()
         return result
 
     def extract_refusal_vector(
