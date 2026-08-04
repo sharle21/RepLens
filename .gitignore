@@ -37,6 +37,11 @@ data/stories/
 # Claude Code
 CLAUDE.md
 
+# Interview-prep docs (personal, not for public repo)
+*.md
+!README.md
+!docs/**/*.md
+
 # Secrets
 .env
 *.key
