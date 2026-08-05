@@ -186,6 +186,19 @@ Key design decisions:
 - **Hook-based**: `ActivationCollector` and `SteeringHook` use PyTorch forward hooks, cleaned up via context managers
 - **Reproducible**: All results saved as JSON with sample responses for inspection
 
+### Interactive Dashboard
+
+`streamlit run dashboard.py` — 7 tabs covering geometry, steering sweeps, defense,
+scenario validation, hallucination, cross-model comparison, and sample responses.
+
+| Geometry | Steering Sweep |
+|---|---|
+| ![Geometry tab](assets/dashboard_geometry.png) | ![Steering sweep tab](assets/dashboard_steering_sweep.png) |
+
+| Defense | Cross-Model |
+|---|---|
+| ![Defense tab](assets/dashboard_defense.png) | ![Cross-model tab](assets/dashboard_cross_model.png) |
+
 ---
 
 ## Engineering Decisions
