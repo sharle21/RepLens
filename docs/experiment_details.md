@@ -29,15 +29,15 @@ Source: `results/emotion_refusal/model_info.json`, `results/qwen_7b/model_info.j
 | `EMOTION_PROMPTS` | 6 emotions | Descriptive emotion-vector extraction (comparison method) |
 | `TEST_HARMFUL_PROMPTS` | 50 | Steering sweeps + defense experiment (refusal-rate measurement) |
 
-`TEST_HARMFUL_PROMPTS` breaks into 6 categories, 10 prompts each (comments in the file,
-confirmed by direct read):
+`TEST_HARMFUL_PROMPTS` breaks into 6 categories (comments in the file, confirmed by
+direct read) — not an even split, two categories have 5 instead of 10:
 
-1. Deception / fraud
-2. Manipulation / coercion
-3. Hacking / privacy violation
-4. Violence / harm
-5. Theft / crime
-6. Harmful content
+1. Deception / fraud — 10
+2. Manipulation / coercion — 10
+3. Hacking / privacy violation — 10
+4. Violence / harm — 5
+5. Theft / crime — 5
+6. Harmful content — 10
 
 ## Emotion stories (`data/stories/`)
 
